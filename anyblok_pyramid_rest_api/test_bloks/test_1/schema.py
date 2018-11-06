@@ -31,22 +31,22 @@ class ThingSchema(Schema):
     name = fields.Str(required=True)
     secret = fields.Str(required=True, load_only=True)
     example_id = fields.Int(required=True)
-    example = fields.Nested(ExampleSchema())
+    example = fields.Nested(ExampleSchema)
     create_date = fields.DateTime(dump_only=True)
     update_date = fields.DateTime(dump_only=True)
 
 
 class ThingRequestSchema(FullRequestSchema):
     """This one inherits FullRequestSchema and represents the request
-    model.Example
+    model.Thing
     """
-    body = fields.Nested(ThingSchema(partial=('uuid',)))
-    path = fields.Nested(ThingSchema(only=('uuid',)))
+    body = fields.Nested(ThingSchema, exclude=('uuid',))
+    path = fields.Nested(ThingSchema, only=('uuid',))
 
 
 class AnotherSchema(FullRequestSchema):
     """This one inherits FullRequestSchema and represents the request
     model.Example
     """
-    body = fields.Nested(ExampleSchema(partial=('id',)))
-    path = fields.Nested(ExampleSchema(only=('id',)))
+    body = fields.Nested(ExampleSchema, exclude=('id',))
+    path = fields.Nested(ExampleSchema, only=('id',))
