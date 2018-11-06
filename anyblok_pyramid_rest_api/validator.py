@@ -23,13 +23,13 @@ ORDER_BY_OPERATORS = ['asc', 'desc']
 
 def parse_key_with_two_elements(filter_):
     # TODO check for errors into string pattern
-    pattern = ".*\[(.*)\]\[(.*)\]"
+    pattern = ".*\[(.*)\]\[(.*)\]"  # noqa
     return re.match(pattern, filter_).groups()
 
 
 def parse_key_with_one_element(filter_):
     # TODO check for errors into string pattern
-    pattern = ".*\[(.*)\]"
+    pattern = ".*\[(.*)\]"  # noqa
     return re.match(pattern, filter_).groups()[0]
 
 
@@ -116,7 +116,7 @@ def base_validator(request, schema, deserializer, only, unknown=INCLUDE):
         for k, v in errors.items():
             request.errors.add(
                 k, 'Validation error for %s' % k,
-                ''.join(map('{}.\n'.format, v)))
+                v)
 
 
 def service_collection_get_validator(request, schema=None,

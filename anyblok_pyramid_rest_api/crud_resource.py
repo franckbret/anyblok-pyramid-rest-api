@@ -282,7 +282,7 @@ class CrudResource:
             for k, v in errors.items():
                 request.errors.add(
                     part, 'Validation error for %s' % part,
-                    ''.join(map('{}.\n'.format, v)))
+                    {k: v})
 
     def get_model(self, rest_action):
         return self.registry.get(self.model_name(rest_action=rest_action))
@@ -410,7 +410,6 @@ class CrudResource:
             Model = self.get_model('collection_post')
             with saved_errors_in_request(self.request):
                 item = self.create(Model, params=body)
-
         else:
             self.request.errors.add(
                 'body', '400 bad request',
