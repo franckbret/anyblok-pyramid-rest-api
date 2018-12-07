@@ -29,6 +29,7 @@ def saved_errors_in_request(request):
     try:
         yield
     except Exception as e:
+        request.anyblok.registry.rollback()
         logger.exception(e)
         request.errors.add(
             'body', '500 Internal Server Error', str(e))
@@ -49,9 +50,11 @@ def update_from_query_string(request, Model, query, adapter):
     if request.params:
         # TODO: Implement schema validation to use request.validated
         querystring = QueryString(request, Model, adapter=adapter)
-        total_query = querystring.update_sqlalchemy_query(
-            query, only_filter=True)
-        query = querystring.update_sqlalchemy_query(query)
+        total_query = querystring.from_filter_by(query)
+        total_query = querystring.from_tags(total_query)
+        query = querystring.from_order_by(total_query)
+        query = querystring.from_limit(query)
+        query = querystring.from_offset(query)
         # TODO: Advanced pagination with Link Header
         # Link: '<https://api.github.com/user/repos?page=3&per_page=100>;
         # rel="next",
@@ -80,6 +83,7 @@ def post_item(request, Model):
     try:
         return Model.insert(**request.validated['body'])
     except Exception as e:
+        request.anyblok.registry.rollback()
         request.errors.add('body', '500 Internal Server Error', str(e))
         request.errors.status = 500
 
@@ -273,10 +277,13 @@ class CrudResource:
 
         opts['context']['registry'] = request.anyblok.registry
         try:
+            logger.debug('Validate %r with schema %r and option %r',
+                         base[part], Schema, opts)
             schema = Schema(**opts)
             result = schema.load(base[part])
             request.validated[part] = result
         except ValidationError as err:
+            request.anyblok.registry.rollback()
             logger.exception(err)
             errors = err.messages
             for k, v in errors.items():

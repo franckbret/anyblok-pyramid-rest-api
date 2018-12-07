@@ -22,14 +22,12 @@ ORDER_BY_OPERATORS = ['asc', 'desc']
 
 
 def parse_key_with_two_elements(filter_):
-    # TODO check for errors into string pattern
-    pattern = ".*\[(.*)\]\[(.*)\]"  # noqa
+    pattern = ".*\\[(.*)\\]\\[(.*)\\]"
     return re.match(pattern, filter_).groups()
 
 
 def parse_key_with_one_element(filter_):
-    # TODO check for errors into string pattern
-    pattern = ".*\[(.*)\]"  # noqa
+    pattern = ".*\\[(.*)\\]"
     return re.match(pattern, filter_).groups()[0]
 
 
@@ -101,6 +99,7 @@ def base_validator(request, schema, deserializer, only, unknown=INCLUDE):
         deserializer = extract_cstruct
 
     base = deserializer(request)
+    logger.debug('base receipt: %r', base)
     if schema is None:
         request.validated = base
         return
@@ -113,6 +112,7 @@ def base_validator(request, schema, deserializer, only, unknown=INCLUDE):
         request.validated = result
     except ValidationError as err:
         errors = err.messages
+        logger.exception(errors)
         for k, v in errors.items():
             request.errors.add(
                 k, 'Validation error for %s' % k,
